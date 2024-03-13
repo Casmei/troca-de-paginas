@@ -49,7 +49,7 @@ class User extends Authenticatable
      */
     public function books(): HasMany
     {
-        return $this->hasMany(Book::class);
+        return $this->hasMany(Book::class, 'owner_id');
     }
 
     /**
