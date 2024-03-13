@@ -26,7 +26,7 @@ return new class extends Migration
                 'damaged',
                 'unusable',
             ]);
-            $table->enum('gender', [
+            $table->enum('genre', [
                 'fiction',
                 'romance',
                 'suspense',
@@ -51,7 +51,7 @@ return new class extends Migration
                 'manga',
                 'children_literature',
             ]);
-            $table->enum('transacation_type', [
+            $table->enum('transaction_type', [
                 'donation',
                 'borrow',
                 'exchange',
@@ -66,6 +66,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('book');
+        Schema::dropIfExists('books');
     }
 };
