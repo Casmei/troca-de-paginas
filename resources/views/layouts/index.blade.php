@@ -23,7 +23,22 @@
             @if (Route::has('login'))
                 <div class="sm:fixed sm:top-0 sm:right-0 p-6 text-right z-10">
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</a>
+                        <div class="space-x-6 flex  ">
+                            <div class="relative">
+                                <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">
+                                    Notifications
+                                </a>
+
+                                @if ($hasTransactionNotification)
+                                <span class="top-0 animate-pulse left-100 absolute w-3.5 h-3.5 bg-green-400 border-2 border-white dark:border-gray-800 rounded-full"></span>
+                                @endif
+                            </div>
+
+                            <a href="{{ url('/dashboard') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">
+                                Dashboard
+                            </a>
+                        </div>
+
                     @else
                         <a href="{{ route('login') }}" class="font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</a>
 
@@ -34,9 +49,10 @@
                 </div>
             @endif
 
-            <div class="max-w-7xl mx-auto p-6 lg:p-8">
+            <div class="max-w-[90%] mx-auto p-6 lg:p-8">
                 {{ $slot }}
             </div>
         </div>
     </body>
+
 </html>
