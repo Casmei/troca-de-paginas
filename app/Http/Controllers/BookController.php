@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\TransactionNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -21,9 +22,12 @@ class BookController extends Controller
      */
     public function index()
     {
-        $booksAvailableForTransaction = (new Book())->getBooksAvailableForTransactions();
+        $book = new Book();
+        $booksAvaliableForTransaction = $book->getBooksAvaliableForTransactions();
 
-        return view('welcome', ['books' => $booksAvailableForTransaction]);
+        return view('welcome', [
+            'books' => $booksAvaliableForTransaction
+        ]);
     }
 
     /**
@@ -47,8 +51,19 @@ class BookController extends Controller
      */
     public function show(string $id)
     {
-        $book = Book::find($id);
-        return view('book.detail', ['book' => $book]);
+        $book = new Book();
+        $transactionRequested = false;
+
+        if (Auth::check()) {
+            $transactionRequested = $book->userHasAlreadyRequestedTransaction(Auth::id(), $id);
+        }
+
+        $book = $book::find($id);
+
+        return view('book.detail', [
+            'book' => $book,
+            'transactionRequested' => $transactionRequested
+        ]);
     }
 
     /**
@@ -78,7 +93,7 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function request(string $id)
+    public function request(string $bookId)
     {
         try {
             if (!Auth::check()) {
@@ -86,15 +101,17 @@ class BookController extends Controller
                 return redirect()->route('login');
             }
 
-            $this->book->createTransaction($id);
-            $user_id = Auth::id();
-            Log::info("Solicitação de transação do livro '$id' pelo usuário '$user_id' realizada com sucesso!");
+            $requesterId = Auth::id();
+            $this->book->createTransactionNotificationToOwner($requesterId, $bookId);
+
+            Log::info("Solicitação de transação do livro '$bookId' pelo usuário '$requesterId' realizada com sucesso!");
             toastr()->success('Empréstimo solicitado com sucesso!.');
+
             return redirect()->back();
         } catch (\Exception $e) {
             report($e);
             Log::error($e->getMessage());
-            toastr()->error('Ocorreu um erro ao processar sua solicitação.');
+            toastr()->error($e->getMessage());
             return redirect()->back();
         }
     }
