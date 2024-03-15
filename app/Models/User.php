@@ -53,10 +53,18 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the books of the user.
+     * Get the transactions of the user.
      */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'owner_id');
+    }
+
+    /**
+     * Get the transaction notifications of the user.
+     */
+    public function transactionNotifications(): HasMany
+    {
+        return $this->hasMany(TransactionNotification::class, 'requester_id');
     }
 }
