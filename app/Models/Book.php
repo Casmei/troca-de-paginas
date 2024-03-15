@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Events\TransactionRequested;
+use App\Events\TransactionRequestedEvent;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -30,9 +32,17 @@ class Book extends Model
     }
 
     /**
-     * Get the books that are available for transactions.
+     * Get all transaction notifications of the book.
      */
-    public function getBooksAvailableForTransactions(): Collection
+    public function transactionNotifications(): HasMany
+    {
+        return $this->hasMany(TransactionNotification::class, 'book_id');
+    }
+
+    /**
+     * Get the books that are avaliable for transactions.
+     */
+    public function getBooksAvaliableForTransactions(): Collection
     {
         // Obtenha os IDs de todos os livros que estão em transações com status 'pending'
         $booksInPendingTransactionsIds = Transaction::where('status', 'pending')
@@ -42,24 +52,32 @@ class Book extends Model
         return Book::whereNotIn('id', $booksInPendingTransactionsIds)->get();
     }
 
-    public function isAvaliableBookToTransaction(string $id): bool
+    public function userHasAlreadyRequestedTransaction(string $requester_id, string $book_id): bool
     {
-        return Book::find($id)->first() ? true : false;
+        $transactionNotifications = Book::find($book_id)->transactionNotifications()->where('requester_id', $requester_id)->get();
+        return $transactionNotifications->isNotEmpty();
     }
 
-    // public function createTransactionNotificationToOwner(string $owner): TransactionNotification
-    // {
-
-    // }
-
-    public function createTransaction(string $id): void
+    public function isSameOwnerRequester(string $requesterId, string $bookId): bool
     {
-        //todo: verificar se o livro está disponivel para uma transacao
-        if (!$this->isAvaliableBookToTransaction($id)) {
-            throw ValidationException::withMessages(['Livro já está em uma outra transacao']);
+        $book = Book::find($bookId);
+        return $book->owner->id == $requesterId;
+    }
+
+    public function createTransactionNotificationToOwner(string $requesterId, string $bookId): void
+    {
+        if ($this->userHasAlreadyRequestedTransaction($requesterId, $bookId)) {
+            throw ValidationException::withMessages(['Livro já solicitado para transacao']);
         }
-        $this->isAvaliableBookToTransaction($id);
-        //todo: criar uma notificao para o usuario de livro requisitado
-        //todo: bloquear o livro para novas transacoes
+
+        if ($this->isSameOwnerRequester($requesterId, $bookId)) {
+            throw ValidationException::withMessages(['O dono nao pode solicitar o mesmo livro']);
+        }
+
+        $transactionNotification = new TransactionNotification();
+        $transactionNotification->requester_id = $requesterId;
+        $transactionNotification->book_id = $bookId;
+        $transactionNotification->status = 'not_viewed';
+        $transactionNotification->save();
     }
 }
