@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,6 +20,10 @@ Route::controller(BookController::class)->group(function () {
     Route::get('/', 'index')->name('welcome');
     Route::get('/books/{id}/detail', 'show')->name('book.detail');
     Route::post('/book/{id}/request', 'request')->name('book.request');
+});
+
+Route::controller(TransactionController::class)->group(function () {
+    Route::get('/transactions/notifications', 'index')->name('transaction.notification');
 });
 
 Route::get('/dashboard', function () {
