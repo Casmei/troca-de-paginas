@@ -38,9 +38,29 @@ class TransactionNotification extends Model
         $books = Book::all()->where('owner_id', $logged_user);
 
         foreach ($books as $book) {
-            return !!$book->transactionNotifications->where('status', "not_viewed")->isNotEmpty();
+            $hasTransactionNotification = $book
+                ->transactionNotifications
+                ->where('status', "not_viewed")
+                ->isNotEmpty()
+            ;
+
+            if ($hasTransactionNotification != false) {
+                return true;
+            }
         }
 
         return false;
+    }
+
+    public static function seeAllNotification(string $userId): void
+    {
+        $notifications = TransactionNotification::whereHas('book.owner', function ($query) use ($userId) {
+            $query->where('users.id', $userId);
+        })->where('status', 'not_viewed')->get();
+
+        foreach ($notifications as $notification) {
+            $notification->status = 'viewed';
+            $notification->save();
+        }
     }
 }
