@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
-use App\Models\TransactionNotification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -114,5 +114,14 @@ class BookController extends Controller
             toastr()->error($e->getMessage());
             return redirect()->back();
         }
+    }
+
+    public function myBooks()
+    {
+        $books = User::find(Auth::id())->books()->get();
+
+        return view('book.list', [
+            'books' => $books
+        ]);
     }
 }

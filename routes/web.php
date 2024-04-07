@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(BookController::class)->group(function () {
     Route::get('/', 'index')->name('welcome');
+    Route::get('/books', 'myBooks')->name('book.list');
     Route::get('/books/{id}/detail', 'show')->name('book.detail');
     Route::post('/book/{id}/request', 'request')->name('book.request');
 });
